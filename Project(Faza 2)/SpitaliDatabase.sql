@@ -159,6 +159,7 @@ Create table NrTelefonitKontaktiEmergjent (
     Tipi_Dhomes varchar(10) not null unique,
     Kati int not null check(Kati between -1 and 4),
     Pacienti_ID int REFERENCES Pacienti(Pacienti_ID) ON DELETE CASCADE ON UPDATE CASCADE,
+    Infermieri_ID int REFERENCES Infermieri(Infermieri_ID) ON DELETE CASCADE ON UPDATE CASCADE,
     Primary key(Nr_Dhomes)
 )
 Create table Termini(
@@ -186,6 +187,7 @@ Create Table Trajtohet(
     Foreign Key(Infermieri_ID) REFERENCES Infermieri(Infermieri_ID) ON DELETE NO ACTION,
     Foreign Key(Doktori_ID) REFERENCES Doktori(Doktori_ID) ON DELETE  NO ACTION,
     Foreign Key(ID_TeDhenatMjeksore) REFERENCES TeDhenatMjeksore(ID) ON DELETE  NO ACTION,
+    Unique(Pacienti_ID, Doktori_ID, Infermieri_ID, ID_TeDhenatMjeksore)
 
 )
 
