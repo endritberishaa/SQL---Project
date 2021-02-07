@@ -646,8 +646,30 @@ group by f.Pacienti_ID
 select * from Pacienti
 where Data_Lindjes BETWEEN '1990-01-01' and '1992-01-01'
 --Dorant i vazhdon edhe 4 tjera te ndryshme
+-- Selekto ID-n e Pacientit , emrin e Pacientit dhe mbiemrin Te cilet i takojn qytetit te Prishtines.
+Select p.Pacienti_ID, p.Emri, p.Mbiemri 
+From Pacienti p
+Where Qyteti like 'Prishtine'
+
+--Selekto Id-n e Infermierit,emrin dhe mbiemrin e infermierit te Cilet jan nen nen vezhgimin e Doktorit me Id '1345'
+
+Select i.Infermieri_ID,i.Emri,i.Mbiemri,i.Data_Lindjes 
+From Infermieri i
+Where Doktori_ID = 1345
+
+--selekto te gjitha kolonat e  trajtimit  duke i renditur sipas emrit te trajtimit
+
+Select * From Trajtimi
+Order by Emri_Trajtimit
+
+--Selekto te gjitha kolonat e Kompanis se Sigurimit te cilat kan emrin 'Pristig' dhe 'Kosova e Re'
+
+Select * From KompaniaSigurimit
+Where Emri = 'Pristig' or Emri = 'Kosova e Re'  
+
 ---------------------------
 --2
+
 
 select rs.Emri as 'Emri Recepsionistit', rs.Mbiemri as 'Mbiemri Recepsionistit', rgj.Pacienti_ID, p.Emri, p.Mbiemri
 from Recepsionisti rs, regjistron rgj, Pacienti p 
@@ -668,11 +690,110 @@ Order By 3 desc
 
 select * from Pacienti p, TeDhenatMjeksore tdm
 where p.Pacienti_ID = tdm.Pacienti_ID and p.Emri like 'Rrahman' and p.Mbiemri like 'Llapjani'
+--
+
+--Selekto Emrin dhe Mbiemrin e Pacientit dhe Emrin dhe Mbiemrin e Kontaktit emergjent per Pacientet me Mbiemrin 'Dushi' dhe 'Hysejni'
+
+Select p.Emri,p.Mbiemri, ne.Emri,ne.Mbiemri From Pacienti p, KontaktiEmergjent ne
+Where p.Mbiemri = 'Dushi' and p.Mbiemri = 'Hysejni'
+
+--Selekto ID-n e Pacientit dhe Emrin e Tij, te Cilet trajtohen nga Doktori_ID i cili ka specializimin ('Ortolog','Pediater','Farmacist')
+
+Select p.Pacienti_ID,p.Emri,t.Doktori_ID  From Pacienti p, Trajtohet t , Specializimi_Doktorit d
+Where Specializimi In('Ortolog','Pediater','Farmacist')
+
+--Selekto te gjitha kolonat e Punonjesit dhe numeroji te gjitha si 'Punetoret e Spitalit' dhe numero 5 si 'Pacient'
+
+Select *, count(*) as 'Puntoret e Spitalit',count(5)as 'Pacientet' from Punonjesi , Pacienti 
+
+--Selekto kolonat unike per Ilaqin dhe ID-n e Pacientit nga TeDhenatMjeksore dhe renditi sipas ID-s se Pacientit
+
+Select Distinct s.Ilaqi ,s.Pacienti_ID From TeDhenatMjeksore s
+order by Pacienti_ID
 
 -------------------------
 
 
 --3
+
+--Selekto Id-n e Pacientit dhe emrin nga Pacienti dhe te perputhen ID-t me ID-n e Punonjesit te tabela Punonjesi
+
+Select p.Pacienti_ID,p.emri,pu.Punonjesi_ID from Pacienti p Inner Join Punonjesi pu
+On p.Pacienti_ID = pu.Punonjesi_ID
+
+--Selekto emrin,mbiemrin dhe specializmin e Infermierit ku perputhen Specializimi i tij me kualifikimin e Doktorit perkates
+
+Select i.emri, i.mbiemri,s.specializimi from Infermieri i Inner Join  Specializimi_Infermierit s 
+on s.Specializimi = 'Pediater' Inner Join Kualifikimi_Doktorit d on d.Kualifikimi = 'Pediater'
+
+--Selekto emrin dhe mbiemrin e Punonjesit dhe emrin e Kompanis se sigurimit ku perputhen te gjitha kolonat nga e majta ne te djatht tu perfshi Punonjesi Id 
+--dhe Pacienti_ID dhe si kusht te jen te Prishtines
+
+Select p.emri,p.mbiemri,k.emri from Punonjesi p FULL Join KompaniaSigurimit k on p.Punonjesi_ID = k.Pacienti_ID
+where k.Qyteti = 'Prishtine'
+
+--Selektoni Id-n e Doktorit si 'Doktori' dhe specializimin e tij nga Tabela e majt ne te djatht ku IDt te perputhen dhe Specializimi 
+--te jete (Pediater, Stomatolog ose Ortolog)
+
+Select d.Doktori_ID as 'Doktori', i.Specializimi
+from Doktori d LEFT JOIN Specializimi_Doktorit i on d.Doktori_ID= i.Doktori_ID
+where Specializimi in ('Pediater','Stomatolog','Ortolog')
+--
+
+--4
+
+Select s.Pacienti_ID,s.Diagnoza 
+from TeDhenatMjeksore s
+where s.ID not in (Select distinct t.Pacienti_ID from Termini t)
+--
+
+Select t.Diagnoza, (Select count(t.Ilaqi) From TeDhenatMjeksore t
+Where Ilaqi = 'Omega-3') as 'Ilaqet' from TeDhenatMjeksore t 
+Order by Ilaqi
+--
+
+Select p.Emri,p.mbiemri,p.Punonjesi_ID 
+From Punonjesi p
+Where p.Punonjesi_ID = (Select r.Recepsionisti_ID 'ID per Recepsionist'
+						from Recepsionisti r
+						Where r.Mbiemri In ('Zajmi','Shala','Hoxha')
+)
+--
+
+Select n.shuma from Fatura n
+where n.Shuma > ANY (Select 4000 from Fatura n)
+--
+
+--5 
+Select top 3 c.Pacienti_ID,c.numri_fiskal , shuma = (Select count(shuma) from Fatura)
+From Fatura c;
+--
+
+Select top 3 k.emri 
+from KompaniaSigurimit k ,(Select k.Pacienti_ID, count (qyteti) as 'Qyteti' From KompaniaSigurimit k	group by Qyteti)
+--
+--6
+
+(Select emri,mbiemri From Doktori)
+UNION (Select emri , mbiemri From Infermieri)
+--
+
+(Select Doktori_ID , Mbiemri from Doktori)
+INTERSECT
+(Select doktori_ID, mbiemri from Infermieri)
+--
+
+(Select Emri , Mbiemri from Punonjesi)
+Except
+(Select Emri, mbiemri from Pacienti)
+--
+
+(Select emri, qyteti from KompaniaSigurimit)
+Except
+(Select emri,mbiemri from Doktori)
+
+
+
 
 
 
